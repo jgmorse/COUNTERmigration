@@ -3,6 +3,11 @@
 require 'csv'
 require 'securerandom'
 
+
+def map_idno_to_noid(idno)
+
+end
+
 header_row = [
   'session',
   'institution',
@@ -23,13 +28,17 @@ header_row = [
 CSV.open('data/output.csv', 'w') do |output|
   output << header_row
 
-  CVS.foreach(ARGV.shift, headers: true) do |input|
+  CSV.foreach(ARGV.shift, headers: true) do |input|
     #Expand each row into one row per hit
     hits = input['total']
-    hits.times {
+    hits.to_i.times {
       row = CSV::Row.new(header_row,[])
       row['session'] = "Migrated from DLXS stats for HELIO-3240 on #{DateTime.now} ID:#{SecureRandom.hex(10)}"
+      row['institution'] = input['institution']
 
+      map_idno_to_noid(input['resource'])
+
+      output << row
     }
   end
 end
