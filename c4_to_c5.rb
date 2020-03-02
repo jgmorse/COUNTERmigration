@@ -3,9 +3,16 @@
 require 'csv'
 require 'securerandom'
 
-
-def map_idno_to_noid(idno)
-
+def create_idno_map
+  map = Hash.new
+  # The following requires a file in data/map.csv that is the output of
+  # sudo -u heliotrope-production RAILS_ENV=production bundle exec rails "heliotrope:handles_publisher[#{publisher}, all]"
+  CSV.foreach('data/map.csv') do |line|
+    next unless line[2]
+    # idnos to noids
+    map[ line[2] ] = line[0]
+  end
+  return map
 end
 
 header_row = [
@@ -25,6 +32,8 @@ header_row = [
   'parent_noid'
 ]
 
+map = create_idno_map
+
 CSV.open('data/output.csv', 'w') do |output|
   output << header_row
 
@@ -36,7 +45,7 @@ CSV.open('data/output.csv', 'w') do |output|
       row['session'] = "Migrated from DLXS stats for HELIO-3240 on #{DateTime.now} ID:#{SecureRandom.hex(10)}"
       row['institution'] = input['institution']
 
-      map_idno_to_noid(input['resource'])
+      row['noid'] = map[ input['title'] ]
 
       output << row
     }
