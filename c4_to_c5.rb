@@ -68,8 +68,9 @@ CSV.open('data/output.csv', 'w') do |output|
       row['updated_at'] = input['hitdate']
       row['press'] = 16
       row['parent_noid'] = noid
-      row['hebid'] = idno
-      row['subtype'] = input['subtype']
+      # Handy for reviewing and testing output but not otherwise valid:
+      # row['hebid'] = idno
+      # row['subtype'] = input['subtype']
 
       if input['subtype'] == 'pdf'
         output << row
