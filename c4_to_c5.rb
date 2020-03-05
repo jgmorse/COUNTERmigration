@@ -22,14 +22,6 @@ def create_epub_map
   return map
 end
 
-def get_access_type(input)
-  #consume csv of OA hebids or noids
-  #if this title is on the list
-    #return 'OA_Gold'
-  #else`
-    #return 'Controlled'
-end
-
 header_row = [
   'session',
   'institution',
@@ -49,6 +41,7 @@ header_row = [
 
 idno_map = create_idno_map
 epub_map = create_epub_map
+oa_idnos = File.readlines('data/OA.csv', chomp: true)
 
 CSV.open('data/output.csv', 'w') do |output|
   output << header_row
@@ -75,7 +68,7 @@ CSV.open('data/output.csv', 'w') do |output|
       row['investigation'] = 1
       row['request'] = 1
       row['turnaway'] = nil
-      row['access_type'] = get_access_type(input)
+      row['access_type'] = oa_idnos.include?(idno) ? 'OA_Gold' : 'Controlled'
       row['created_at'] = input['hitdate']
       row['updated_at'] = input['hitdate']
       row['press'] = 16
