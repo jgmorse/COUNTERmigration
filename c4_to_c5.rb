@@ -8,19 +8,13 @@ def create_idno_map
   # The following requires a file in data/map.csv that is the output of
   # sudo -u heliotrope-production RAILS_ENV=production bundle exec rails "heliotrope:handles_publisher[#{publisher}, all]"
   CSV.foreach('data/map.csv') do |line|
-    next unless line[2]
+    next unless line[2] =~ /heb\d{5}\.\d{4}\.\d{3}/
     # idnos to noids
     map[ line[2] ] = line[0]
   end
   return map
 end
 
-def create_epub_map
-  map = Hash.new
-  #consume csv of monograph noid, epub noid
-  #convert to hash
-  return map
-end
 
 header_row = [
   'session',
@@ -40,8 +34,9 @@ header_row = [
 ]
 
 idno_map = create_idno_map
-epub_map = create_epub_map
-oa_idnos = File.readlines('data/OA.csv', chomp: true)
+oa_noids = File.readlines('data/heb-monograph-oa-noids.csv', chomp: true)
+monograph_epub_map = Hash[*File.read('data/heb-monograph-to-epub-noids.csv').split(/[,\n]/)]
+
 
 CSV.open('data/output.csv', 'w') do |output|
   output << header_row
@@ -60,19 +55,19 @@ CSV.open('data/output.csv', 'w') do |output|
 
       row['session'] = "Migrated from DLXS stats for HELIO-3240 on #{DateTime.now} ID:#{SecureRandom.hex(10)}"
       row['institution'] = input['institution']
-
-      row['noid'] = epub_map[ idno_map[ idno ] ]
+      noid = idno_map[ idno ]
+      row['noid'] = monograph_epub_map[ noid ]
       row['model'] = 'FileSet'
       row['section'] = 'unknown'
       row['section_type'] = 'Chapter'
       row['investigation'] = 1
       row['request'] = 1
       row['turnaway'] = nil
-      row['access_type'] = oa_idnos.include?(idno) ? 'OA_Gold' : 'Controlled'
+      row['access_type'] = oa_noids.include?(noid) ? 'OA_Gold' : 'Controlled'
       row['created_at'] = input['hitdate']
       row['updated_at'] = input['hitdate']
       row['press'] = 16
-      row['parent_noid'] = idno_map[ idno ]
+      row['parent_noid'] = noid
       row['hebid'] = idno
       row['subtype'] = input['subtype']
 
