@@ -56,12 +56,12 @@ CSV.open('data/output.csv', 'w') do |output|
       row['session'] = "Migrated from DLXS stats for HELIO-3240 on #{DateTime.now} ID:#{SecureRandom.hex(10)}"
       row['institution'] = input['institution']
       noid = idno_map[ idno ]
+      next unless noid
       row['noid'] = monograph_epub_map[ noid ]
       row['model'] = 'FileSet'
       row['section'] = 'unknown'
       row['section_type'] = 'Chapter'
       row['investigation'] = 1
-      row['request'] = 1
       row['turnaway'] = nil
       row['access_type'] = oa_noids.include?(noid) ? 'OA_Gold' : 'Controlled'
       row['created_at'] = input['hitdate']
@@ -73,11 +73,17 @@ CSV.open('data/output.csv', 'w') do |output|
       # row['subtype'] = input['subtype']
 
       if input['subtype'] == 'pdf'
+        row['request'] = 1
         output << row
       elsif input['subtype'] == 'text'
+        row['request'] = 1
         output << row
-      elsif input['subtype'] == 'pg/img' && titles_seen[ idno ] % 25 == 0
+      elsif input['subtype'] == 'pg/img'
+        row['request'] = 1
         #Effectively count each page view as 1/25th of a chapter
+        output << row if titles_seen[ idno ] % 25 == 0
+      else
+        row['request'] = nil
         output << row
       end
     }
