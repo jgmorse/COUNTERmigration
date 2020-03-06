@@ -81,7 +81,7 @@ CSV.open('data/output.csv', 'w') do |output|
       elsif input['subtype'] == 'pg/img'
         row['request'] = 1
         #Effectively count each page view as 1/25th of a chapter
-        output << row if titles_seen[ idno ] % 25 == 0
+        output << row if titles_seen[ idno ] % 25 == 1
       else
         row['request'] = nil
         output << row
